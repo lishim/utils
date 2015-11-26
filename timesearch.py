@@ -2,10 +2,32 @@
 
 import os
 import sys
+import argparse
+import re
 
-FILE_NAME= sys.argv[1]
-STR_FROM = sys.argv[2]
-STR_TO = sys.argv[3]
+parser = argparse.ArgumentParser()
+parser.add_argument('file', help='file containing sequential data')
+parser.add_argument('range_from', help='beginning of search range, inclusive')
+parser.add_argument('range_to', help='end of search range, exclusive')
+parser.add_argument('-r', '--regex', type=str, help='match specified regex only')
+args = parser.parse_args()
+
+# regex examples:
+#   (?<=^2015-01-01).* skip date at the beginning of line
+#   (?<= \- \- \[).* access log
+
+FILE_NAME= args.file
+STR_FROM = args.range_from
+STR_TO = args.range_to
+
+if STR_FROM >= STR_TO:
+  print 'ERROR: range_from >= range_to'
+  sys.exit(1)
+
+if args.regex:
+  REGEX = re.compile(args.regex)
+else:
+  REGEX = None
 
 file_size = os.stat(FILE_NAME).st_size
 if file_size == 0:
@@ -32,6 +54,13 @@ while True:
   if mid >= j:
     break
   line = f.readline()
+  if REGEX:
+    match = REGEX.search(line)
+    if match is None:
+      print 'line ' + line + ' does not match regex ' + REGEX.pattern
+      sys.exit(1)
+    else:
+      line = match.group(0)
   if STR_FROM <= line:
     j = mid
   else:
@@ -58,6 +87,13 @@ while True:
   if mid >= j:
     break
   line = f.readline()
+  if REGEX:
+    match = REGEX.search(line)
+    if match is None:
+      print 'line ' + line + ' does not match regex ' + REGEX.pattern
+      sys.exit(1)
+    else:
+      line = match.group(0)
   if STR_TO >= line:
     i = mid
   else:
@@ -68,4 +104,3 @@ SEEK_TO = j
 f.seek(SEEK_FROM)
 while f.tell() < SEEK_TO:
   print f.readline(),
-
