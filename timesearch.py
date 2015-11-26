@@ -13,8 +13,7 @@ parser.add_argument('-r', '--regex', type=str, help='match specified regex only'
 args = parser.parse_args()
 
 # regex examples:
-#   (?<=^2015-01-01).* skip date at the beginning of line
-#   (?<= \- \- \[).* access log
+#   ./timesearch.py request.log "26/Nov/2015:12:59:19" "26/Nov/2015:12:59:20" -r "(?<= \- \- \[).*"
 
 FILE_NAME= args.file
 STR_FROM = args.range_from
